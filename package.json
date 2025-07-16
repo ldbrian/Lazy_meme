@@ -34,7 +34,19 @@
   },
   "pnpm": {
     "peerDependencyRules": {
-      "ignoreMissing": ["esbuild"]
+      "ignoreMissing": ["esbuild"],
+      "allowedVersions": {
+        "esbuild": "*"
+      }
+    },
+    "neverBuiltDependencies": ["esbuild"],
+    "packageExtensions": {
+      "esbuild": {
+        "optional": true
+      }
     }
+  },
+  "resolutions": {
+    "esbuild": "*"
   }
 }
