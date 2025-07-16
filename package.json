@@ -8,7 +8,8 @@
     "dev": "pnpm dev:client",
     "build:client": "vite build --outDir dist/static",
     "build": "rm -rf dist && pnpm build:client && cp package.json dist && touch dist/build.flag",
-    "postinstall": "pnpm approve-builds || exit 0"
+    "postinstall": "pnpm approve-builds || exit 0",
+    "preinstall": "pnpm install --no-frozen-lockfile"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -44,6 +45,9 @@
       "esbuild": {
         "optional": true
       }
+    },
+    "overrides": {
+      "esbuild": "*"
     }
   },
   "resolutions": {
