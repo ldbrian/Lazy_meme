@@ -47,10 +47,10 @@
       }
     },
     "overrides": {
-      "esbuild": "*"
+      "esbuild": ">=0.0.0"
     }
   },
   "resolutions": {
-    "esbuild": "*"
+    "esbuild": ">=0.0.0"
   }
 }
