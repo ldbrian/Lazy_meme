@@ -11,9 +11,10 @@
     "build:client": "vite build --outDir dist/static",
     "build": "rm -rf dist && pnpm build:client && cp package.json dist && touch dist/build.flag"
   },
-  "resolutions": {
-    "esbuild": "0.21.5",
-    "vite": "6.2.0"
+  "pnpm": {
+    "peerDependencyRules": {
+      "ignoreMissing": ["react", "react-dom"]
+    }
   },
   "dependencies": {
     "clsx": "2.1.1",
