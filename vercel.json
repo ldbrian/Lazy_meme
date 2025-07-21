@@ -6,7 +6,8 @@
     }
   ],
   "buildCommand": "pnpm build",
-  "installCommand": "pnpm install --force"
+  "installCommand": "pnpm install --no-frozen-lockfile"
+
 
 
 }
