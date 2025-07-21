@@ -5,6 +5,8 @@
       "destination": "/index.html"
     }
   ],
-  "buildCommand": "pnpm install && pnpm build",
-  "installCommand": "pnpm install --frozen-lockfile"
+  "buildCommand": "pnpm build",
+  "installCommand": "pnpm install --force",
+  "packageManager": "pnpm@10.12.0"
+
 }
