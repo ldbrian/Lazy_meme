@@ -204,18 +204,7 @@ export default function Home() {
                立即加入
              </motion.a>
              
-             {/* 管理员登录按钮 - 仅用于开发测试 */}
-             <motion.button
-               whileHover={{ scale: 1.05 }}
-               whileTap={{ scale: 0.95 }}
-               onClick={() => {
-                 setIsAdmin(true);
-                 toast.success("管理员登录成功");
-               }}
-               className="mt-4 inline-block px-8 py-3 bg-red-600 text-white font-bold rounded-xl hover:shadow-md transition-all"
-             >
-               管理员登录
-             </motion.button>
+              {/* 管理员登录已移至导航栏 */}
            </div>
         </motion.section>
       </main>

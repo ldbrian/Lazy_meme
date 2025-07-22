@@ -1,12 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { toast } from "sonner";
 import zh from "@/locales/zh";
 import en from "@/locales/en";
 
 export default function Navbar() {
   const location = useLocation();
-  const { isAuthenticated, isAdmin, logout } = useAuth();
+  const { isAuthenticated, isAdmin, logout, setIsAdmin } = useAuth();
   const { language, toggleLanguage } = useLanguage();
   const t = language === 'zh' ? zh : en;
 
@@ -75,14 +76,24 @@ export default function Navbar() {
             >
              {language === 'zh' ? 'EN' : '中文'}
            </button>
-          {isAuthenticated && (
-            <button 
-              onClick={logout}
-              className="px-3 py-1 text-gray-600 hover:text-red-600"
-            >
-              {t.navbar.logout}
-            </button>
-          )}
+           {isAdmin ? (
+             <button 
+               onClick={logout}
+               className="px-3 py-1 text-gray-600 hover:text-red-600"
+             >
+               {t.navbar.logout}
+             </button>
+           ) : (
+             <button 
+               onClick={() => {
+                 setIsAdmin(true);
+                 toast.success("管理员登录成功！现在可以访问后台管理页面了");
+               }}
+               className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700"
+             >
+               管理员登录
+             </button>
+           )}
         </div>
       </div>
     </nav>
