@@ -5,8 +5,10 @@ import CultureCard from "@/components/CultureCard";
 import MemeCarousel from "@/components/MemeCarousel";
 import { hotWords, cultureContent, memes } from "@/data/mockData";
 import { motion } from "framer-motion";
-import { useLanguage } from "@/context/LanguageContext";
-import zh from "@/locales/zh";
+  import { useLanguage } from "@/context/LanguageContext";
+  import { useAuth } from "@/context/AuthContext";
+  import { toast } from "sonner";
+  import zh from "@/locales/zh";
 import en from "@/locales/en";
 
 export default function Home() {
@@ -14,6 +16,8 @@ export default function Home() {
   const t = language === 'zh' ? zh : en;
   const userLevel = 5;
   const levelProgress = 65;
+  const { setIsAdmin } = useAuth();
+  
   const achievements = [
     { id: 1, name: t.home.achievement1, icon: "fa-trophy", color: "bg-[#FFC94B]" },
     { id: 2, name: t.home.achievement2, icon: "fa-globe-asia", color: "bg-[#4A6163]" },
@@ -197,9 +201,22 @@ export default function Home() {
               href="/community" 
               className="inline-block px-8 py-3 bg-[#4A6163] text-white font-bold rounded-xl hover:shadow-md transition-all"
             >
-              立即加入
-            </motion.a>
-          </div>
+               立即加入
+             </motion.a>
+             
+             {/* 管理员登录按钮 - 仅用于开发测试 */}
+             <motion.button
+               whileHover={{ scale: 1.05 }}
+               whileTap={{ scale: 0.95 }}
+               onClick={() => {
+                 setIsAdmin(true);
+                 toast.success("管理员登录成功");
+               }}
+               className="mt-4 inline-block px-8 py-3 bg-red-600 text-white font-bold rounded-xl hover:shadow-md transition-all"
+             >
+               管理员登录
+             </motion.button>
+           </div>
         </motion.section>
       </main>
       <Footer />
