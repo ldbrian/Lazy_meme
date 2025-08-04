@@ -1,17 +1,10 @@
 import { useState } from "react";
-import { Link, Outlet, useLocation, Navigate } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { toast } from "sonner";
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("hotwords");
-  const { isAdmin, logout } = useAuth();
-  const location = useLocation();
-
-  if (!isAdmin) {
-    toast.error("需要管理员权限");
-    return <Navigate to="/" state={{ from: location }} replace />;
-  }
+  const { logout } = useAuth();
 
   const isActive = (tab: string) => activeTab === tab;
 
@@ -28,19 +21,19 @@ export default function AdminPage() {
               onClick={() => setActiveTab("hotwords")}
               className={`w-full text-left px-4 py-3 rounded-lg mb-1 ${isActive("hotwords") ? "bg-red-50 text-red-600" : "hover:bg-gray-50"}`}
             >
-              <i className="fas fa-fire mr-2"></i> 热词管理
+               <i className="fas fa-fire mr-2"></i> Hot Words <span className="text-sm opacity-70">热词管理</span>
             </button>
             <button
               onClick={() => setActiveTab("culture")}
               className={`w-full text-left px-4 py-3 rounded-lg mb-1 ${isActive("culture") ? "bg-red-50 text-red-600" : "hover:bg-gray-50"}`}
             >
-              <i className="fas fa-globe-asia mr-2"></i> 文化内容管理
+               <i className="fas fa-globe-asia mr-2"></i> Culture Content <span className="text-sm opacity-70">文化内容管理</span>
             </button>
             <button
               onClick={() => setActiveTab("memes")}
               className={`w-full text-left px-4 py-3 rounded-lg mb-1 ${isActive("memes") ? "bg-red-50 text-red-600" : "hover:bg-gray-50"}`}
             >
-              <i className="fas fa-image mr-2"></i> 梗图管理
+               <i className="fas fa-image mr-2"></i> Memes <span className="text-sm opacity-70">梗图管理</span>
             </button>
           </nav>
           <div className="p-4 border-t mt-auto">

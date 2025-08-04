@@ -46,16 +46,19 @@ export default function MemeGrid({ memes, hotWords }: MemeGridProps) {
             
             {/* 悬停说明框 */}
             <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 flex flex-col justify-end text-white">
-              <h3 className="text-xl font-bold mb-2">{meme.title}</h3>
-              <p className="text-sm mb-1">
-                <span className="font-semibold">中文:</span> {meme.chineseDesc}
-              </p>
-              <p className="text-sm mb-1">
-                <span className="font-semibold">English:</span> {meme.englishDesc}
-              </p>
-              <p className="text-sm mb-2">
-                <span className="font-semibold">文化分析:</span> {meme.culturalAnalysis}
-              </p>
+               <h3 className="text-xl font-bold mb-2">{meme.title}</h3>
+               <p className="text-sm mb-1">
+                 <span className="font-semibold">Chinese:</span> {meme.chineseDesc}
+               </p>
+               <p className="text-sm mb-1">
+                 <span className="font-semibold">Pinyin:</span> {meme.chineseDesc.split('').map(char => char + ' ').join('')}
+               </p>
+               <p className="text-sm mb-2">
+                 <span className="font-semibold">English:</span> {meme.englishDesc}
+               </p>
+               <p className="text-sm mb-2">
+                 <span className="font-semibold">Cultural Analysis:</span> {meme.culturalAnalysis}
+               </p>
               
               {/* 相关热词 */}
               {meme.relatedWords.length > 0 && (

@@ -10,10 +10,10 @@ export default function MemesPage() {
       <main className="flex-grow container mx-auto px-4 py-8">
         <section className="mb-8">
           <h1 className="text-3xl font-bold text-red-600 mb-6 border-b-2 border-red-600 pb-2 inline-block">
-            梗图专区
+            Meme Zone <span className="text-sm opacity-70">梗图专区</span>
           </h1>
           <p className="text-gray-600 mb-6">
-            探索中国网络文化中的流行梗图，了解背后的文化含义
+            Explore popular memes in Chinese internet culture, understand the cultural meanings behind them
           </p>
           <MemeGrid memes={memes} hotWords={hotWords} />
         </section>

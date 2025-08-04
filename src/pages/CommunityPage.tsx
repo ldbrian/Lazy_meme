@@ -29,7 +29,7 @@ export default function CommunityPage() {
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-red-600 mb-6 border-b-2 border-red-600 pb-2 inline-block">
-          学习社区
+           Learning Community <span className="text-sm opacity-70">学习社区</span>
         </h1>
 
         {/* 标签页导航 */}
@@ -38,19 +38,19 @@ export default function CommunityPage() {
             className={`py-2 px-4 font-medium ${activeTab === "discussion" ? "text-red-600 border-b-2 border-red-600" : "text-gray-500"}`}
             onClick={() => setActiveTab("discussion")}
           >
-            讨论区
+             Discussion <span className="text-sm opacity-70">讨论区</span>
           </button>
           <button
             className={`py-2 px-4 font-medium ${activeTab === "groups" ? "text-red-600 border-b-2 border-red-600" : "text-gray-500"}`}
             onClick={() => setActiveTab("groups")}
           >
-            学习小组
+             Study Groups <span className="text-sm opacity-70">学习小组</span>
           </button>
           <button
             className={`py-2 px-4 font-medium ${activeTab === "qa" ? "text-red-600 border-b-2 border-red-600" : "text-gray-500"}`}
             onClick={() => setActiveTab("qa")}
           >
-            问答系统
+             Q&A <span className="text-sm opacity-70">问答系统</span>
           </button>
         </div>
 

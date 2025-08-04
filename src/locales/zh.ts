@@ -6,6 +6,8 @@ export default {
     culture: "文化对比",
     community: "学习社区",
     admin: "后台管理",
+    profile: "个人资料",
+    login: "登录",
     logout: "退出",
     title: "Lazy_MEME"
   },

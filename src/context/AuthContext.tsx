@@ -2,54 +2,69 @@ import { createContext, useContext, useState, useEffect } from "react";
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  setIsAuthenticated: (value: boolean) => void;
-  isAdmin: boolean;
-  setIsAdmin: (value: boolean) => void;
+  userType: "user" | "admin" | null;
+  login: (type: "user" | "admin") => void;
   logout: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
-  setIsAuthenticated: () => {},
-  isAdmin: false,
-  setIsAdmin: () => {},
+  userType: null,
+  login: () => {},
   logout: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // 从localStorage加载状态
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
-    () => localStorage.getItem('isAuthenticated') === 'true'
-  );
-  const [isAdmin, setIsAdmin] = useState<boolean>(
-    () => localStorage.getItem('isAdmin') === 'true'
-  );
+  const [authState, setAuthState] = useState<{
+    isAuthenticated: boolean;
+    userType: "user" | "admin" | null;
+  }>(() => {
+    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    const userType = localStorage.getItem('userType') as "user" | "admin" | null;
+    
+    return {
+      isAuthenticated,
+      userType: isAuthenticated ? userType : null
+    };
+  });
 
   // 当状态变化时保存到localStorage
   useEffect(() => {
-    localStorage.setItem('isAuthenticated', isAuthenticated.toString());
-  }, [isAuthenticated]);
+    if (authState.isAuthenticated && authState.userType) {
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('userType', authState.userType);
+    } else {
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('userType');
+    }
+  }, [authState]);
 
-  useEffect(() => {
-    localStorage.setItem('isAdmin', isAdmin.toString());
-  }, [isAdmin]);
+  const login = (type: "user" | "admin"): Promise<void> => {
+    return new Promise((resolve) => {
+      setAuthState({
+        isAuthenticated: true,
+        userType: type
+      });
+      resolve();
+    });
+  };
 
   const logout = () => {
-    setIsAuthenticated(false);
-    setIsAdmin(false);
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('isAdmin');
+    setAuthState({
+      isAuthenticated: false,
+      userType: null
+    });
   };
 
   return (
     <AuthContext.Provider
-      value={{
-        isAuthenticated,
-        setIsAuthenticated,
-        isAdmin,
-        setIsAdmin,
-        logout,
-      }}
+       value={{
+         isAuthenticated: authState.isAuthenticated,
+         userType: authState.userType,
+         login,
+         logout,
+       }}
     >
       {children}
     </AuthContext.Provider>

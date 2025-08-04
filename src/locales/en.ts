@@ -6,6 +6,8 @@ export default {
     culture: "Culture",
     community: "Community",
     admin: "Admin",
+    profile: "Profile",
+    login: "Login",
     logout: "Logout",
     title: "Lazy_MEME"
   },

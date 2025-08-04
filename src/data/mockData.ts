@@ -1,3 +1,11 @@
+/* 
+  当前项目使用本地mock数据和localStorage存储用户状态
+  对于生产环境，建议添加后端数据库以实现：
+  1. 持久化用户数据和学习进度
+  2. 提供用户注册和安全认证
+  3. 存储用户生成内容和交互数据
+  4. 实现更复杂的业务逻辑
+*/
 export interface HotWord {
   id: number;
   chinese: string;

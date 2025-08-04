@@ -49,7 +49,7 @@ export default function CulturePage() {
             <div className="relative">
               <div className="absolute -left-4 top-0 bottom-0 w-1 bg-gradient-to-b from-red-600/20 to-transparent"></div>
               <div className="p-6 bg-white rounded-lg shadow-md">
-                <h2 className="text-2xl font-bold text-red-600 mb-4">中国视角</h2>
+                <h2 className="text-2xl font-bold text-red-600 mb-4">Chinese Perspective <span className="text-sm opacity-70">中国视角</span></h2>
                 <p className="text-gray-700 whitespace-pre-line">{comparison.chinaContent}</p>
               </div>
             </div>
@@ -58,7 +58,7 @@ export default function CulturePage() {
             <div className="relative">
               <div className="absolute -right-4 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-600/20 to-transparent"></div>
               <div className="p-6 bg-white rounded-lg shadow-md">
-                <h2 className="text-2xl font-bold text-blue-600 mb-4">西方视角</h2>
+                 <h2 className="text-2xl font-bold text-blue-600 mb-4">Western Perspective <span className="text-sm opacity-70">西方视角</span></h2>
                 <p className="text-gray-700 whitespace-pre-line">{comparison.westContent}</p>
               </div>
             </div>
