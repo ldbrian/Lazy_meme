@@ -1,30 +1,63 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { HotWord, Meme, CultureContent } from '@/data/mockData';
 import { hotWordApi, memeApi, cultureApi, userApi } from './api';
 
-// 通用数据获取Hook
+// 通用数据获取Hook - 移除本地模拟数据依赖
 export function useDataFetch<T>(
   fetchFn: () => Promise<T>,
-  initialData: T
+  initialData: T,
+  tableName: string
 ): {
-  data: T;
+  data: T | null;
   loading: boolean;
   error: Error | null;
+  isEmpty: boolean;
   refetch: () => Promise<void>;
 } {
-  const [data, setData] = useState<T>(initialData);
+  const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
+  const [isEmpty, setIsEmpty] = useState<boolean>(false);
 
   const fetchData = async () => {
     setLoading(true);
+    setIsEmpty(false);
     try {
       const result = await fetchFn();
       setData(result);
       setError(null);
+      
+      // 检查数组是否为空
+      const isArrayEmpty = Array.isArray(result) && (result as any[]).length === 0;
+      setIsEmpty(isArrayEmpty);
+      
+      if (isArrayEmpty) {
+        console.log(`获取到${tableName}数据，但返回结果为空`);
+        toast.info(`没有找到${tableName.replace('_', ' ')}数据，请检查数据库是否有内容`);
+      } else {
+        console.log(`成功获取${tableName}数据`);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch data'));
-      console.error('Error fetching data:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch data from Supabase';
+      setError(err instanceof Error ? err : new Error(errorMessage));
+      setData(null);
+      setIsEmpty(false);
+      
+      // 更详细的错误分类
+      if (errorMessage.includes('401') || errorMessage.includes('unauthorized')) {
+        console.error(`获取${tableName}数据错误: 权限不足，请检查API密钥`);
+        toast.error(`数据访问失败: 权限不足，请检查Supabase密钥配置`);
+      } else if (errorMessage.includes('404') || errorMessage.includes('not found')) {
+        console.error(`获取${tableName}数据错误: 表不存在`);
+        toast.error(`数据访问失败: 表${tableName}不存在，请检查数据库结构`);
+      } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+        console.error(`获取${tableName}数据错误: 网络问题`);
+        toast.error(`网络连接失败: 无法连接到Supabase服务器，请检查网络`);
+      } else {
+        console.error(`获取${tableName}数据错误:`, errorMessage);
+        toast.error(`数据加载失败: ${errorMessage}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -34,16 +67,17 @@ export function useDataFetch<T>(
     fetchData();
   }, []);
 
-  return { data, loading, error, refetch: fetchData };
+  return { data, loading, error, isEmpty, refetch: fetchData };
 }
 
-// 热词数据Hook
+// 热词数据Hook - 移除本地模拟数据
 export const useHotWords = () => {
-  const { hotWords: initialData } = require('@/data/mockData');
   return useDataFetch<HotWord[]>(
     () => hotWordApi.getAll(),
-    initialData);
-};
+    [],
+    'hotwords'
+  );
+}
 
 // 使用Supabase实时订阅热词数据
 export const useHotWordsRealtime = () => {
@@ -59,9 +93,10 @@ export const useHotWordsRealtime = () => {
         const initialData = await hotWordApi.getAll();
         setData(initialData);
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to fetch data'));
+        setError(err instanceof Error ? err : new Error('Failed to fetch hot words data'));
+        console.error('Error fetching hot words:', err);
       } finally {
-        setLoading(false);
+        setLoading(false);  
       }
     };
     
@@ -101,26 +136,30 @@ export const useHotWordsRealtime = () => {
   return { data, loading, error };
 };
 
-// 梗图数据Hook
+// 梗图数据Hook - 移除本地模拟数据
 export const useMemes = () => {
-  const { memes: initialData } = require('@/data/mockData');
   return useDataFetch<Meme[]>(
     () => memeApi.getAll(),
-    initialData
+    [],
+    'memes'
   );
-};
+}
 
-// 文化内容数据Hook
+// 文化内容数据Hook - 移除本地模拟数据
 export const useCultureContent = () => {
-  const { cultureContent: initialData } = require('@/data/mockData');
   return useDataFetch<CultureContent>(
-    async () => {
+     async () => {
       const data = await cultureApi.getAll();
-      return data[0] || initialData;
+      if (!data || data.length === 0) {
+        // 返回null而不是抛出错误，让useDataFetch处理空数据情况
+        return null;
+      }
+      return data[0];
     },
-    initialData
+    {} as CultureContent,
+    'culture_content'
   );
-};
+}
 
 // 用户学习进度Hook
 export const useLearningProgress = () => {

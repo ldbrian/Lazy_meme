@@ -1,24 +1,80 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import HotWordCard from "@/components/HotWordCard";
 import CultureCard from "@/components/CultureCard";
 import MemeCarousel from "@/components/MemeCarousel";
-import { hotWords, cultureContent, memes } from "@/data/mockData";
+import { useHotWords, useMemes, useCultureContent } from "@/services/dataService";
 import { motion } from "framer-motion";
-  import { useAuth } from "@/context/AuthContext";
-  import { toast } from "sonner";
-  import en from "@/locales/en";
+import { useAuth } from "@/context/AuthContext";
+import en from "@/locales/en";
 
 
 export default function Home() {
-  const [hotWordsLoading, setHotWordsLoading] = useState(false);
   const t = en; // 固定使用英文
   const userLevel = 5;
   const levelProgress = 65;
   const { isAuthenticated } = useAuth();
   
-  // 移除未定义的成就引用
+  // 测试Supabase连接
+  useEffect(() => {
+    const checkConnection = async () => {
+      try {
+        const { testSupabaseConnection } = await import('@/services/supabaseService');
+        await testSupabaseConnection();
+      } catch (error) {
+        console.error('Supabase连接检查失败:', error);
+      }
+    };
+    
+    checkConnection();
+  }, []);
+  
+  // 添加手动重试连接的状态和方法
+  const [connectionStatus, setConnectionStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  
+  useEffect(() => {
+    const checkConnection = async () => {
+      setConnectionStatus('loading');
+      try {
+        const { testSupabaseConnection } = await import('@/services/supabaseService');
+        const success = await testSupabaseConnection();
+        setConnectionStatus(success ? 'success' : 'error');
+      } catch (error) {
+        console.error('Supabase连接检查失败:', error);
+        setConnectionStatus('error');
+      }
+    };
+    
+    checkConnection();
+  }, []);
+  
+  // 从数据库获取数据
+  const { data: hotWords, loading: hotWordsLoading, error: hotWordsError, isEmpty: hotWordsIsEmpty, refetch: hotWordsRefetch } = useHotWords();
+  const { data: memesData, loading: memesLoading, error: memesError, isEmpty: memesIsEmpty, refetch: memesRefetch } = useMemes();
+  const { data: cultureData, loading: cultureLoading, error: cultureError, isEmpty: cultureIsEmpty, refetch: cultureRefetch } = useCultureContent();
+  
+  // 错误处理 - 显示详细错误信息
+   useEffect(() => {
+    if (hotWordsError) {
+      const errorMsg = hotWordsError instanceof Error ? hotWordsError.message : 'Unknown error';
+      toast.error(`Failed to load hot words: ${errorMsg}`);
+      console.error('Hot words error details:', hotWordsError);
+    }
+    if (memesError) {
+      const errorMsg = memesError instanceof Error ? memesError.message : 'Unknown error';
+      toast.error(`Failed to load memes: ${errorMsg}`);
+      console.error('Memes error details:', memesError);
+    }
+    if (cultureError) {
+      const errorMsg = cultureError instanceof Error ? cultureError.message : 'Unknown error';
+      toast.error(`Failed to load culture content: ${errorMsg}`);
+      console.error('Culture error details:', cultureError);
+    }
+  }, [hotWordsError, memesError, cultureError]);
+  
+  // 成就数据
   const achievements = [
     { id: 1, name: "Language Learner", icon: "fa-trophy", color: "bg-[#FFC94B]" },
     { id: 2, name: "Culture Explorer", icon: "fa-globe-asia", color: "bg-[#4A6163]" },
@@ -39,12 +95,41 @@ export default function Home() {
             background: 'linear-gradient(135deg, rgba(249,250,244,0.7) 0%, rgba(249,166,108,0.3) 100%)'
           }}
         >
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl font-bold text-[#4A6163] mb-4">{t.home.welcome}</h1>
-            <p className="text-lg text-[#4A6163]/90 mb-6">
-              {t.home.description}
-            </p>
-          </div>
+              <div className="max-w-3xl mx-auto text-center">
+                <h1 className="text-4xl font-bold text-[#4A6163] mb-4">{t.home.welcome}</h1>
+                <p className="text-lg text-[#4A6163]/90 mb-6">
+                  {t.home.description}
+                </p>
+                
+                {/* 连接状态显示 */}
+                {connectionStatus === 'error' && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                    <div className="flex items-center justify-center mb-2">
+                      <i className="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                      <h3 className="font-bold text-red-700">无法连接到服务器</h3>
+                    </div>
+                    <p className="text-red-600 text-sm mb-4">请检查您的网络连接或稍后重试</p>
+                    <button
+                      onClick={async () => {
+                        setConnectionStatus('loading');
+                        const { retrySupabaseConnection } = await import('@/services/supabaseService');
+                        const success = await retrySupabaseConnection();
+                        setConnectionStatus(success ? 'success' : 'error');
+                      }}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                      <i className="fas fa-sync-alt mr-1"></i> 重试连接
+                    </button>
+                  </div>
+                )}
+                
+                {connectionStatus === 'loading' && (
+                  <div className="flex flex-col items-center">
+                    <div className="w-12 h-12 border-4 border-[#4A6163] border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p className="text-[#4A6163]">正在连接到服务器...</p>
+                  </div>
+                )}
+              </div>
 
           {isAuthenticated ? (
             <>
@@ -133,28 +218,74 @@ export default function Home() {
                {t.common.viewAll} <i className="fas fa-chevron-right ml-1 text-sm"></i>
             </motion.a>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {hotWordsLoading ? (
-              // 加载状态占位符
-              Array(3).fill(0).map((_, index) => (
-                <div key={index} className="bg-white rounded-xl shadow-md overflow-hidden animate-pulse">
-                  <div className="p-4 space-y-3">
-                    <div className="h-6 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-full"></div>
-                    <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-                    <div className="flex space-x-1">
-                      {[...Array(5)].map((_, i) => (
-                        <div key={i} className="h-4 w-4 bg-gray-200 rounded-full"></div>
-                      ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {hotWordsLoading ? (
+                // 加载状态占位符
+                Array(3).fill(0).map((_, index) => (
+                  <div key={index} className="bg-white rounded-xl shadow-md overflow-hidden animate-pulse">
+                    <div className="p-4 space-y-3">
+                      <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-full"></div>
+                      <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                      <div className="flex space-x-1">
+                        {[...Array(5)].map((_, i) => (
+                          <div key={i} className="h-4 w-4 bg-gray-200 rounded-full"></div>
+                        ))}
+                      </div>
                     </div>
                   </div>
+                ))
+              ) : hotWordsError ? (
+                <div className="col-span-full bg-white rounded-xl shadow-md text-center p-8 border border-red-100">
+                  <i className="fas fa-exclamation-triangle text-3xl text-red-500 mb-4"></i>
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">Failed to load hot words</h3>
+                  <p className="text-gray-600 mb-4">{hotWordsError.message}</p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button 
+                      onClick={() => window.location.reload()}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                      <i className="fas fa-sync-alt mr-1"></i> Retry
+                    </button>
+                    <button 
+                      onClick={() => hotWordsRefetch?.()}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                    >
+                      <i className="fas fa-database mr-1"></i> Refresh Data
+                    </button>
+                  </div>
                 </div>
-              ))
-            ) : hotWords.map((hotWord) => (
-              <HotWordCard key={hotWord.id} hotWord={hotWord} />
-            ))}
-          </div>
+              ) : hotWordsIsEmpty ? (
+                <div className="col-span-full bg-white rounded-xl shadow-md text-center p-8 border border-yellow-100">
+                  <i className="fas fa-info-circle text-3xl text-yellow-500 mb-4"></i>
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">No hot words found</h3>
+                  <p className="text-gray-600 mb-4">The hotwords table is empty. Please add data to Supabase first.</p>
+                  <button 
+                    onClick={() => hotWordsRefetch?.()}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <i className="fas fa-refresh mr-1"></i> Check Again
+                  </button>
+                </div>
+              ) : hotWords && hotWords.length > 0 ? (
+                hotWords.map((hotWord) => (
+                  <HotWordCard key={hotWord.id} hotWord={hotWord} />
+                ))
+              ) : (
+                <div className="col-span-full bg-white rounded-xl shadow-md text-center p-8">
+                  <i className="fas fa-question-circle text-3xl text-gray-400 mb-4"></i>
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">Waiting for data</h3>
+                  <p className="text-gray-600 mb-4">Please wait while we connect to the database</p>
+                  <button 
+                    onClick={() => hotWordsRefetch?.()}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                  >
+                    <i className="fas fa-sync-alt mr-1"></i> Refresh
+                  </button>
+                </div>
+              )}
+            </div>
         </section>
 
         {/* 文化内容推荐 */}
@@ -168,7 +299,44 @@ export default function Home() {
             </a>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <CultureCard culture={cultureContent} />
+              {cultureLoading ? (
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-[#4A6163]/10 animate-pulse">
+                  <div className="h-8 bg-gray-200 rounded w-3/4 mb-6"></div>
+                  <div className="space-y-3">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="h-4 bg-gray-200 rounded"></div>
+                    ))}
+                    <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                  </div>
+                  <div className="h-10 bg-gray-200 rounded w-1/3 mt-8"></div>
+                </div>
+              ) : cultureError ? (
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-red-100 text-center py-12">
+                  <i className="fas fa-exclamation-triangle text-3xl text-red-500 mb-4"></i>
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">Failed to load culture content</h3>
+                  <p className="text-gray-600 mb-4">{cultureError.message}</p>
+                  <button 
+                    onClick={() => cultureRefetch?.()}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    <i className="fas fa-sync-alt mr-1"></i> Retry
+                  </button>
+                </div>
+              ) : cultureIsEmpty || !cultureData ? (
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-yellow-100 text-center py-12">
+                  <i className="fas fa-info-circle text-3xl text-yellow-500 mb-4"></i>
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">No culture content found</h3>
+                  <p className="text-gray-600 mb-4">The culture_content table is empty or no data was returned</p>
+                  <button 
+                    onClick={() => cultureRefetch?.()}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <i className="fas fa-refresh mr-1"></i> Check Again
+                  </button>
+                </div>
+              ) : (
+                <CultureCard culture={cultureData} />
+              )}
             <motion.div 
               whileHover={{ y: -5 }}
               className="bg-white p-6 rounded-xl shadow-lg border border-[#4A6163]/10"
@@ -214,7 +382,54 @@ export default function Home() {
             </a>
           </div>
           <div className="max-w-5xl mx-auto">
-            <MemeCarousel memes={memes} />
+              {memesLoading ? (
+                <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md overflow-hidden animate-pulse h-64">
+                  <div className="h-full w-full bg-gray-200"></div>
+                </div>
+              ) : memesError ? (
+                <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md overflow-hidden h-64 flex items-center justify-center border border-red-100">
+                  <div className="text-center px-6">
+                    <i className="fas fa-exclamation-triangle text-3xl text-red-500 mb-4"></i>
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">Failed to load memes</h3>
+                    <p className="text-gray-600 mb-4">{memesError.message}</p>
+                    <button 
+                      onClick={() => memesRefetch?.()}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                      <i className="fas fa-sync-alt mr-1"></i> Retry
+                    </button>
+                  </div>
+                </div>
+              ) : memesIsEmpty ? (
+                <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md overflow-hidden h-64 flex items-center justify-center border border-yellow-100">
+                  <div className="text-center px-6">
+                    <i className="fas fa-info-circle text-3xl text-yellow-500 mb-4"></i>
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">No memes found</h3>
+                    <p className="text-gray-600 mb-4">The memes table is currently empty</p>
+                    <button 
+                      onClick={() => memesRefetch?.()}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      <i className="fas fa-refresh mr-1"></i> Check Again
+                    </button>
+                  </div>
+                </div>
+              ) : memesData && memesData.length > 0 ? (
+                <MemeCarousel memes={memesData} />
+              ) : (
+                <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md overflow-hidden h-64 flex items-center justify-center">
+                  <div className="text-center px-6">
+                    <i className="fas fa-question-circle text-3xl text-gray-400 mb-4"></i>
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">Waiting for memes data</h3>
+                    <button 
+                      onClick={() => memesRefetch?.()}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                    >
+                      <i className="fas fa-sync-alt mr-1"></i> Refresh
+                    </button>
+                  </div>
+                </div>
+              )}
           </div>
         </section>
 
@@ -234,11 +449,9 @@ export default function Home() {
                href="/community" 
                className="inline-block px-8 py-3 bg-[#4A6163] text-white font-bold rounded-xl hover:shadow-md transition-all"
              >
-                Join Now
-              </motion.a>
-             
-              {/* 管理员登录已移至导航栏 */}
-           </div>
+               Join Now
+             </motion.a>
+          </div>
         </motion.section>
       </main>
       <Footer />

@@ -61,11 +61,11 @@ export const memeApi = {
 
 // 文化内容相关API
 export const cultureApi = {
-  getAll: () => fetchData<CultureContent>('culture'),
-  getById: (id: number) => fetchDataById<CultureContent>('culture', id),
-  create: (data: Omit<CultureContent, 'id'>) => addData<CultureContent>('culture', data),
-  update: (id: number, data: Partial<CultureContent>) => updateData<CultureContent>('culture', id, data),
-  delete: (id: number) => deleteData('culture', id),
+  getAll: () => fetchData<CultureContent>('culture_content'),
+  getById: (id: number) => fetchDataById<CultureContent>('culture_content', id),
+  create: (data: Omit<CultureContent, 'id'>) => addData<CultureContent>('culture_content', data),
+  update: (id: number, data: Partial<CultureContent>) => updateData<CultureContent>('culture_content', id, data),
+  delete: (id: number) => deleteData('culture_content', id),
 };
 
 // 用户相关API
